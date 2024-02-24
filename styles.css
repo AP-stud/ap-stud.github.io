@@ -37,7 +37,7 @@ body{
     background-color: white;
 }
 
-ul{
+.topNavigator ul{
     list-style-type: none;
     display: inline-flex;
 }
@@ -75,3 +75,13 @@ h1 , h3{
 #notSquare{
     border-radius: 0px;
 }
+.n64 li, .n64 a{    
+    text-decoration: none;
+    list-style: circle;
+    display:block;
+    font-size: 25px;
+    padding: 5px;
+    color: beige;
+}
+
+/* god this is terrible to work with */
