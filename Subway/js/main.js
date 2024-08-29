@@ -6145,6 +6145,13 @@
             i.keyboard.onKeyPress("right", i.pressRight.bind(ControllerSystem_assertThisInitialized(i))),
             i.keyboard.onKeyPress("down", i.pressDown.bind(ControllerSystem_assertThisInitialized(i))),
             i.keyboard.onKeyPress("space", i.pressAction.bind(ControllerSystem_assertThisInitialized(i))),
+            
+            i.keyboard.onKeyPress("a", i.pressLeft.bind(ControllerSystem_assertThisInitialized(i))),
+            i.keyboard.onKeyPress("w", i.pressUp.bind(ControllerSystem_assertThisInitialized(i))),
+            i.keyboard.onKeyPress("d", i.pressRight.bind(ControllerSystem_assertThisInitialized(i))),
+            i.keyboard.onKeyPress("s", i.pressDown.bind(ControllerSystem_assertThisInitialized(i))),
+            i.keyboard.onKeyPress("space", i.pressAction.bind(ControllerSystem_assertThisInitialized(i))),
+
             (i.view = new c.Graphics()),
             (i.view.alpha = 0),
             i.view.beginFill(16763904),

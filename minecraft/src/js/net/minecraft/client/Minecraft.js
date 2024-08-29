@@ -363,6 +363,48 @@ export default class Minecraft {
         if (button === this.settings.keyOpenInventory) {
             this.displayScreen(new GuiContainerCreative(this.player));
         }
+
+        if(button === 'KeyV'){
+            if (hitResult != null) {
+                let x = hitResult.x + hitResult.face.x;
+                let y = hitResult.y + hitResult.face.y;
+                let z = hitResult.z + hitResult.face.z;
+
+                let placedBoundingBox = new BoundingBox(x, y, z, x + 1, y + 1, z + 1);
+
+                // Don't place blocks if the player is standing there
+                if (!placedBoundingBox.intersects(this.player.boundingBox)) {
+                    let typeId = this.player.inventory.getItemInSelectedSlot();
+
+                    // Get previous block
+                    let prevTypeId = this.world.getBlockAt(x, y, z);
+
+                    if (typeId !== 0 && prevTypeId !== typeId) {
+                        // Place block
+                        this.world.setBlockAt(x, y, z, typeId);
+
+                        // Swing player arm
+                        this.player.swingArm();
+
+                        // Handle block abilities
+                        let block = Block.getById(typeId);
+                        block.onBlockPlaced(this.world, x, y, z, hitResult.face);
+
+                        // Play sound
+                        let sound = block.getSound();
+                        let soundName = sound.getStepSound();
+                        this.soundManager.playSound(
+                            soundName,
+                            hitResult.x + 0.5,
+                            hitResult.y + 0.5,
+                            hitResult.z + 0.5,
+                            1.0,
+                            sound.getPitch() * 0.8
+                        );
+                    }
+                }
+            }
+        }
     }
 
     onMouseClicked(button) {
@@ -421,7 +463,7 @@ export default class Minecraft {
             }
 
             // Place block
-            if (button === 2) {
+            if (button === 2){
                 if (hitResult != null) {
                     let x = hitResult.x + hitResult.face.x;
                     let y = hitResult.y + hitResult.face.y;
