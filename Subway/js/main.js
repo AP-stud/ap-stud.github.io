@@ -489,6 +489,7 @@
           animate: {},
           misc: {},
         },
+        
         preload: {
           image: {
             "preload/splash": {
