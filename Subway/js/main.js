@@ -1,3 +1,19 @@
+var isScaryRan = false;
+var gameScary = false;
+var randomNumScary = Math.random();
+
+function isScary(){
+    isScaryRan = true;
+    if(randomNumScary < 0.5){
+        gameScary = true;
+    };
+    console.log(gameScary);
+}
+
+if(!isScaryRan){
+    isScary();
+}
+
 !(function (h) {
     function webpackJsonpCallback(t) {
       for (var e, i, n = t[0], o = t[1], s = t[2], a = 0, r = []; a < n.length; a++) (i = n[a]), d[i] && r.push(d[i][0]), (d[i] = 0);
@@ -221,6 +237,10 @@
               mp3: "audio/ui_button.mp3",
               ogg: "audio/ui_button.ogg",
             },
+            "audio/scarytheme": {
+                //mp3: "audio/scarytheme.mp3",
+                ogg: "audio/scarytheme.ogg",
+            },
           },
           model: {},
           json: {},
@@ -409,6 +429,10 @@
               default: "idle/train_start.png",
               low: "idle/train_start_mip.png",
             },
+            "idle/scarytrain_start": {
+                default: "idle/scarytrain_start.png",
+                low: "idle/scarytrain_start_mip.png",
+            },
             "idle/trains_tex": {
               default: "idle/trains_tex.png",
               low: "idle/trains_tex_mip.png",
@@ -497,7 +521,7 @@
                 quant: !0,
               },
               default: "preload/splash.png",
-              low: "preload/splash_mip.png",
+              low: "preload/splash_mip2.png",
             },
           },
           fonts: {},
@@ -4760,8 +4784,14 @@
   
           function Logo() {
             var t;
-            return ((t = e.call(this) || this).model = H.getEntityCloneBlend("/train_start", "train_start", 0.999)), (t.model.ry = Math.PI), t.addChild(t.model), t;
-          }
+              if(gameScary){
+          return ((t = e.call(this) || this).model = H.getEntityCloneBlend("/train_start", "scarytrain_start", 0.999)), (t.model.ry = Math.PI), t.addChild(t.model), t;
+
+              }else{
+              return ((t = e.call(this) || this).model = H.getEntityCloneBlend("/train_start", "train_start", 0.999)), (t.model.ry = Math.PI), t.addChild(t.model), t;
+
+              }
+                    }
           return (i = e), ((t = Logo).prototype = Object.create(i.prototype)), ((t.prototype.constructor = t).__proto__ = i), Logo;
         })(v.a),
         fe = null,
@@ -10329,16 +10359,25 @@
           (s.resize = function (t, e, i) {
             (this.aspectRatio = e / t), (this.w = t), (this.h = e), (this.s = i), this.hud && this.hud.resize(t, e, i), this.tutorial && this.tutorial.resize(t, e, i), this.controller && this.controller.resize(t, e);
           }),
-          (s.playTheme = function () {
-            !this.playingTheme &&
-              B.theme &&
-              ((this.playingTheme = !0),
-              this.sfx.volume(this.config.volume),
-              this.sfx.play("theme", {
-                theme: !0,
-              }),
-              this.sfx.loadAll());
-          }),
+          
+(s.playTheme = function () {
+    if (gameScary) {
+        if (!this.playingTheme && B.theme) {
+            this.playingTheme = true;
+            this.sfx.volume(this.config.volume * 2);
+            this.sfx.play("scarytheme");
+        }
+    } else {
+        if (!this.playingTheme && B.theme) {
+            this.playingTheme = true;
+            this.sfx.volume(this.config.volume);
+            this.sfx.play("theme");
+        }
+    }
+    this.theme = true;
+    this.sfx.loadAll();
+
+    }),
           (s.enterTunnel = function () {
             this.onEnterTunnel.run();
           }),
