@@ -4,7 +4,7 @@ var randomNumScary = Math.random();
 
 function isScary(){
     isScaryRan = true;
-    if(randomNumScary < 0.5){
+    if(randomNumScary < 0.2){
         gameScary = true;
     };
     console.log(gameScary);
@@ -12,6 +12,35 @@ function isScary(){
 
 if(!isScaryRan){
     isScary();
+}
+
+var couldBeJake = "assets/placeholder/jake.png";
+var oceanColor = "ocean";
+var fogFunction = 187;
+var traiNS = "trains_tex";
+var proPS = "props_tex";
+var environmenT = "environment_tex";
+if(gameScary){
+    couldBeJake = "assets/placeholder/scaryface.png";
+    oceanColor = "scaryocean";
+    environmenT = "scaryenvironment_tex";  
+    proPS = "scaryprops_tex";
+    traiNS = "scarytrains_tex";
+    fogFunction = 666;
+}
+
+var scaryColorX = 0;
+var scaryColorY = 0;
+var scaryColorZ = 0;
+
+if(gameScary){
+    scaryColorX = .5;
+    scaryColorY = .5;
+    scaryColorZ = 0;
+}else{
+    ScaryColorX = 0.388;
+    ScaryColorY = 0.698;
+    ScaryColorZ = 1;
 }
 
 !(function (h) {
@@ -352,6 +381,10 @@ if(!isScaryRan){
               default: "game/ocean.png",
               low: "game/ocean_mip.png",
             },
+            "game/scaryocean": {
+                default: "game/scaryocean.png",
+                low: "game/scaryocean_mip.png",
+            },
             "game/shadow": {
               default: "game/shadow.png",
               low: "game/shadow_mip.png",
@@ -417,6 +450,10 @@ if(!isScaryRan){
               default: "idle/environment_tex.png",
               low: "idle/environment_tex_mip.png",
             },
+            "idle/scaryenvironment_tex":{
+              default: "idle/scaryenvironment_tex.png",
+              low: "idle/scaryenvironment_tex_mip.png",
+            },
             "idle/jake_tex": {
               default: "idle/jake_tex.png",
               low: "idle/jake_tex_mip.png",
@@ -424,6 +461,10 @@ if(!isScaryRan){
             "idle/props_tex": {
               default: "idle/props_tex.png",
               low: "idle/props_tex_mip.png",
+            },
+            "idle/scaryprops_tex": {
+                default: "idle/scaryprops_tex.png",
+                low: "idle/scaryprops_tex_mip.png",
             },
             "idle/train_start": {
               default: "idle/train_start.png",
@@ -436,6 +477,10 @@ if(!isScaryRan){
             "idle/trains_tex": {
               default: "idle/trains_tex.png",
               low: "idle/trains_tex_mip.png",
+            },
+            "idle/scarytrains_tex": {
+                default: "idle/scarytrains_tex.png",
+                low: "idle/scarytrains_tex_mip.png",
             },
           },
           fonts: {},
@@ -505,6 +550,9 @@ if(!isScaryRan){
             "placeholder/jake": {
               default: "placeholder/jake.png",
             },
+            "placeholder/scaryface": {
+                default: "placeholder/scaryface.png",
+            },
           },
           fonts: {},
           audio: {},
@@ -558,6 +606,10 @@ if(!isScaryRan){
     187: function (t, e) {
       t.exports =
         "uniform vec3 uGlobalAmbient;\nuniform float uOpacity;\nuniform vec3 uAmbiantLight;\n\nvarying vec3 vNormal;\nvarying vec3 vPosition;\nvarying vec4 vScreenPosition;\n\n#ifdef COLOR\nuniform vec3 uColor;\n#endif\n\n#ifdef OCCLUSION_MAP\nuniform sampler2D uOcclusionMap;\n#endif\n\n#if defined( MAP ) || defined( EMISSIVE_MAP ) || defined( OCCLUSION_MAP )\nvarying vec2 vUv;\n#endif\n\n#ifdef MAP\nuniform sampler2D uMap;\n#endif\n\n#ifdef FOG\nvarying float vFogFactor;\nvarying vec3 vFogColor;\n#endif\n\n#HOOK_LIGHT_UNIFROMS\n\nvec3 gammaCorrectInput(vec3 color) {\n    return pow(color, vec3(2.2));\n}\n\nfloat gammaCorrectInput(float color) {\n    return pow(color, 2.2);\n}\n\nvec4 gammaCorrectInput(vec4 color) {\n    return vec4(pow(color.rgb, vec3(2.2)), color.a);\n}\n\nvec3 gammaCorrectOutput(vec3 color) {\n    color += vec3(0.0000001);\n    return pow(color, vec3(0.45));\n}\n\nvec4 texture2DSRGB(sampler2D tex, vec2 uv) {\n    vec4 rgba = texture2D(tex, uv);\n    rgba.rgb = gammaCorrectInput(rgba.rgb);\n    return rgba;\n}\n\n\n#HOOK_FRAGMENT_START\n\nvoid main() {\n  vec4 finalColor = vec4(0.0, 0.0, 0.0, uOpacity);\n  vec4 diffuseColor = vec4(1.0, 1.0, 1.0, uOpacity);\n\n#ifdef COLOR\n    diffuseColor.rgb *= uColor;\n#endif\n\n#ifdef MAP\n    // diffuseColor *= texture2DSRGB(uMap, vUv);\n    diffuseColor *= texture2D(uMap, vUv);\n#endif\n\n    #HOOK_LIGHT;\n\n    finalColor.rgb = diffuseColor.rgb;\n    finalColor *= diffuseColor.a;\n    \n    #HOOK_FRAGMENT_MAIN\n\n    \n    gl_FragColor = vec4(finalColor.rgb * finalColor.a, finalColor.a);\n    \n    #HOOK_FRAGMENT_END\n\n#ifdef FOG\n    // FORCING FOG COLOR TO PREVENT A BUG WHERE SOME RED FOG OBJECT WHERE SHOWING UP \n    gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.388, 0.698, 1.0), vFogFactor);\n#endif\n\n    // gl_FragColor.rgb = gammaCorrectOutput(gl_FragColor.rgb);\n\n\n#ifdef RAILS\n    if (vPosition.y < 1.2) return;\n\n    float reflWidth = 1.5;\n    float railDist = 7.0;\n    float laneWidth = 20.0;\n    vec3 reflColor = vec3(1.0, 1.0, 1.0);\n    float reflFactor = abs(vScreenPosition.z - 100.0) * 0.02;\n    if (reflFactor < 0.0) reflFactor = 0.0;\n    if (reflFactor > 1.0) return;\n\n\n    // Middle lane\n    if (vPosition.x > -4.0 && vPosition.x < -2.5) {\n        gl_FragColor.rgb = mix(reflColor, gl_FragColor.rgb, reflFactor);\n    } else if (vPosition.x > 2.5 && vPosition.x < 4.0) {\n        gl_FragColor.rgb = mix(reflColor, gl_FragColor.rgb, reflFactor);\n    }\n\n    // Left lane\n    if (vPosition.x > -4.0 - laneWidth && vPosition.x < -2.5 - laneWidth) {\n        gl_FragColor.rgb = mix(reflColor, gl_FragColor.rgb, reflFactor);\n    } else if (vPosition.x > 2.5 - laneWidth && vPosition.x < 4.0 - laneWidth) {\n        gl_FragColor.rgb = mix(reflColor, gl_FragColor.rgb, reflFactor);\n    }\n\n    // Right lane\n    if (vPosition.x > -4.0 + laneWidth && vPosition.x < -2.5 + laneWidth) {\n        gl_FragColor.rgb = mix(reflColor, gl_FragColor.rgb, reflFactor);\n    } else if (vPosition.x > 2.5 + laneWidth && vPosition.x < 4.0 + laneWidth) {\n        gl_FragColor.rgb = mix(reflColor, gl_FragColor.rgb, reflFactor);\n    }\n#endif\n}\n";
+    },
+    666: function (t, e) {
+        t.exports = 
+        "uniform vec3 uGlobalAmbient;\nuniform float uOpacity;\nuniform vec3 uAmbiantLight;\n\nvarying vec3 vNormal;\nvarying vec3 vPosition;\nvarying vec4 vScreenPosition;\n\n#ifdef COLOR\nuniform vec3 uColor;\n#endif\n\n#ifdef OCCLUSION_MAP\nuniform sampler2D uOcclusionMap;\n#endif\n\n#if defined( MAP ) || defined( EMISSIVE_MAP ) || defined( OCCLUSION_MAP )\nvarying vec2 vUv;\n#endif\n\n#ifdef MAP\nuniform sampler2D uMap;\n#endif\n\n#ifdef FOG\nvarying float vFogFactor;\nvarying vec3 vFogColor;\n#endif\n\n#HOOK_LIGHT_UNIFROMS\n\nvec3 gammaCorrectInput(vec3 color) {\n    return pow(color, vec3(2.2));\n}\n\nfloat gammaCorrectInput(float color) {\n    return pow(color, 2.2);\n}\n\nvec4 gammaCorrectInput(vec4 color) {\n    return vec4(pow(color.rgb, vec3(2.2)), color.a);\n}\n\nvec3 gammaCorrectOutput(vec3 color) {\n    color += vec3(0.0000001);\n    return pow(color, vec3(0.45));\n}\n\nvec4 texture2DSRGB(sampler2D tex, vec2 uv) {\n    vec4 rgba = texture2D(tex, uv);\n    rgba.rgb = gammaCorrectInput(rgba.rgb);\n    return rgba;\n}\n\n\n#HOOK_FRAGMENT_START\n\nvoid main() {\n  vec4 finalColor = vec4(0.0, 0.0, 0.0, uOpacity);\n  vec4 diffuseColor = vec4(1.0, 1.0, 1.0, uOpacity);\n\n#ifdef COLOR\n    diffuseColor.rgb *= uColor;\n#endif\n\n#ifdef MAP\n    // diffuseColor *= texture2DSRGB(uMap, vUv);\n    diffuseColor *= texture2D(uMap, vUv);\n#endif\n\n    #HOOK_LIGHT;\n\n    finalColor.rgb = diffuseColor.rgb;\n    finalColor *= diffuseColor.a;\n    \n    #HOOK_FRAGMENT_MAIN\n\n    \n    gl_FragColor = vec4(finalColor.rgb * finalColor.a, finalColor.a);\n    \n    #HOOK_FRAGMENT_END\n\n#ifdef FOG\n    // FORCING FOG COLOR TO PREVENT A BUG WHERE SOME RED FOG OBJECT WHERE SHOWING UP \n    gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(.2, 0, 0), vFogFactor);\n#endif\n\n    // gl_FragColor.rgb = gammaCorrectOutput(gl_FragColor.rgb);\n\n\n#ifdef RAILS\n    if (vPosition.y < 1.2) return;\n\n    float reflWidth = 1.5;\n    float railDist = 7.0;\n    float laneWidth = 20.0;\n    vec3 reflColor = vec3(1.0, 1.0, 1.0);\n    float reflFactor = abs(vScreenPosition.z - 100.0) * 0.02;\n    if (reflFactor < 0.0) reflFactor = 0.0;\n    if (reflFactor > 1.0) return;\n\n\n    // Middle lane\n    if (vPosition.x > -4.0 && vPosition.x < -2.5) {\n        gl_FragColor.rgb = mix(reflColor, gl_FragColor.rgb, reflFactor);\n    } else if (vPosition.x > 2.5 && vPosition.x < 4.0) {\n        gl_FragColor.rgb = mix(reflColor, gl_FragColor.rgb, reflFactor);\n    }\n\n    // Left lane\n    if (vPosition.x > -4.0 - laneWidth && vPosition.x < -2.5 - laneWidth) {\n        gl_FragColor.rgb = mix(reflColor, gl_FragColor.rgb, reflFactor);\n    } else if (vPosition.x > 2.5 - laneWidth && vPosition.x < 4.0 - laneWidth) {\n        gl_FragColor.rgb = mix(reflColor, gl_FragColor.rgb, reflFactor);\n    }\n\n    // Right lane\n    if (vPosition.x > -4.0 + laneWidth && vPosition.x < -2.5 + laneWidth) {\n        gl_FragColor.rgb = mix(reflColor, gl_FragColor.rgb, reflFactor);\n    } else if (vPosition.x > 2.5 + laneWidth && vPosition.x < 4.0 + laneWidth) {\n        gl_FragColor.rgb = mix(reflColor, gl_FragColor.rgb, reflFactor);\n    }\n#endif\n}\n";
     },
     188: function (t, e) {
       t.exports =
@@ -1293,7 +1345,7 @@ if(!isScaryRan){
         z = i.n(S),
         T = i(186),
         P = i.n(T),
-        M = i(187),
+        M = i(fogFunction),
         E = i.n(M);
       var O = (function (n) {
         var t, e;
@@ -1316,7 +1368,7 @@ if(!isScaryRan){
                     uBend: new Float32Array([0, 0]),
                     uFogDensity: 0.008,
                     uFogDistance: 450,
-                    uFogColor: new Float32Array([0.388, 0.698, 1]),
+                    uFogColor: new Float32Array([scaryColorX, scaryColorY, scaryColorZ]),
                   },
                   !1
                 )),
@@ -1529,7 +1581,9 @@ if(!isScaryRan){
         D = i.n(A);
       var G = (function (i) {
           var t, e;
-  
+
+
+
           function ParticleMaterial(t, e) {
             void 0 === t && (t = {}), void 0 === e && (e = {});
             return (t.uniforms = {}), i.call(this, t, F.a, D.a, [], "particle") || this;
@@ -1539,18 +1593,19 @@ if(!isScaryRan){
         N = O,
         X = null,
         Y = {
-          "environment.fbx": "environment_tex",
-          "environment_start.fbx": "environment_tex",
-          "environment_idle.fbx": "environment_tex",
-          "trains.fbx": "trains_tex",
-          "trains_start.fbx": "trains_tex",
+
+          "environment.fbx": environmenT,
+          "environment_start.fbx": environmenT,
+          "environment_idle.fbx": environmenT,
+          "trains.fbx": traiNS,
+          "trains_start.fbx": traiNS,
           "model_dog.fbx": "enemies",
           "model_guard.fbx": "enemies",
           "board_new_york.fbx": "board_new_york_tex",
           "avatar_jake.fbx": "jake_tex",
           "model_avatar-movement.fbx": "jake_tex",
-          "props.fbx": "props_tex",
-          "props_start.fbx": "props_tex",
+          "props.fbx": proPS,
+          "props_start.fbx": proPS,
         },
         H = (function () {
           function Model() {}
@@ -3008,7 +3063,7 @@ if(!isScaryRan){
         var n = Coin.prototype;
         return (
           (n.createView = function () {
-            this.model || ((this.model = H.getEntityCloneOpaque("/currency/currency_coin", "props_tex")), this.addChild(this.model));
+            this.model || ((this.model = H.getEntityCloneOpaque("/currency/currency_coin", proPS)), this.addChild(this.model));
           }),
           (n.reset = function (t) {
             this.movable.reset(), this.body.velocity.reset(), this.attractable.reset(), (this.body.movable = !1), (this.active = !0);
@@ -5591,7 +5646,7 @@ if(!isScaryRan){
                 (this.distance = new Me("base_long.png")),
                 this.view.addChild(this.distance),
                 (this.coins = new Me("base_long.png", "icon_coin_large.png")),
-                this.view.addChild(this.coins),
+                this.view.aoins),
                 (this.multiplier = new Ee(this.game)),
                 this.view.addChild(this.multiplier),
                 (this.countdown = new c.Text("0", {
@@ -5607,7 +5662,7 @@ if(!isScaryRan){
                 (this.countdown.visible = !1),
                 (this.timers = new c.Container()),
                 this.view.addChild(this.timers),
-                this.resize());
+                this.resize();
             }),
             (t.update = function (t) {
               if (this.game.state === pn.RUNNING && this._built && !(0 < this.countUpdate--)) {
@@ -7075,7 +7130,7 @@ if(!isScaryRan){
             this.count && ((this.count -= this.entity.game.stats.delta), this.entity.game.hud.updateItemTimer("magnet", this.ratio), this.count <= 0 && this.turnOff());
           }),
           (a.turnOn = function () {
-            this.createView(), this.entity.game.hud.addMessage("POWERUP: COIN MAGNET"), this.entity.game.hud.addItemTimer("magnet"), (this.count = this.duration);
+            this.createView(), this.entity.game.hud.addMessage("behind you"), this.entity.game.hud.addItemTimer("magnet"), (this.count = this.duration);
             var t = this.entity.anim.scenes[1];
             H.findEntity("R_Hand_jnt", t.pixiTree, 10).addChild(this.view),
               (this.timer = this.entity.game.sfx.play("special_magnet", {
@@ -9353,7 +9408,7 @@ if(!isScaryRan){
         return H.getEntityClone("epic_start");
       }),
         (Ki.newStart001 = function () {
-          return H.getEntityClone("epic_start001", "ocean", !1, Zi);
+          return H.getEntityClone("epic_start001", oceanColor, !1, Zi);
         }),
         (Ki.newStart002 = function () {
           return H.getEntityClone("epic_start002", "", !1, R);
@@ -9368,7 +9423,7 @@ if(!isScaryRan){
           return H.getEntityClone("epic_mid001", "", !1, R);
         }),
         (Ki.newMid002 = function () {
-          return H.getEntityClone("epic_mid002", "ocean", !1, Zi);
+          return H.getEntityClone("epic_mid002", oceanColor, !1, Zi);
         }),
         (Ki.newMid003 = function () {
           return H.getEntityClone("epic_mid003", "", !1, R);
@@ -9380,7 +9435,7 @@ if(!isScaryRan){
           return H.getEntityClone("epic_end001", "", !1, R);
         }),
         (Ki.newEnd002 = function () {
-          return H.getEntityClone("epic_end002", "ocean", !1, Zi);
+          return H.getEntityClone("epic_end002", oceanColor, !1, Zi);
         }),
         (Ki.newEnd003 = function () {
           return H.getEntityClone("epic_end003", "", !1, R);
@@ -9389,7 +9444,7 @@ if(!isScaryRan){
           return H.getEntityClone("epic_1_start");
         }),
         (Ki.newStart001Alt = function () {
-          return H.getEntityClone("epic_1_start001", "ocean", !1, Zi);
+          return H.getEntityClone("epic_1_start001", oceanColor, !1, Zi);
         }),
         (Ki.newStart002Alt = function () {
           return H.getEntityClone("epic_1_start002", "", !1, R);
@@ -9404,7 +9459,7 @@ if(!isScaryRan){
           return H.getEntityClone("epic_1_mid001", "", !1, R);
         }),
         (Ki.newMid002Alt = function () {
-          return H.getEntityClone("epic_1_mid002", "ocean", !1, Zi);
+          return H.getEntityClone("epic_1_mid002", oceanColor, !1, Zi);
         }),
         (Ki.newMid003Alt = function () {
           return H.getEntityClone("epic_1_mid003", "", !1, R);
@@ -9416,7 +9471,7 @@ if(!isScaryRan){
           return H.getEntityClone("epic_1_end001", "", !1, R);
         }),
         (Ki.newEnd002Alt = function () {
-          return H.getEntityClone("epic_1_end002", "ocean", !1, Zi);
+          return H.getEntityClone("epic_1_end002", oceanColor, !1, Zi);
         }),
         (Ki.newEnd003Alt = function () {
           return H.getEntityClone("epic_1_end003", "", !1, R);
@@ -10365,17 +10420,17 @@ if(!isScaryRan){
         if (!this.playingTheme && B.theme) {
             this.playingTheme = true;
             this.sfx.volume(this.config.volume * 2);
-            this.sfx.play("scarytheme");
+            this.sfx.play("scarytheme",{ loop: true });
         }
     } else {
         if (!this.playingTheme && B.theme) {
             this.playingTheme = true;
             this.sfx.volume(this.config.volume);
-            this.sfx.play("theme");
+            this.sfx.play("theme",{ loop: true });
         }
     }
-    this.theme = true;
-    this.sfx.loadAll();
+        theme: !0;
+        this.sfx.loadAll();
 
     }),
           (s.enterTunnel = function () {
@@ -12015,7 +12070,7 @@ if(!isScaryRan){
               this.menu.btn.boosts && (this.menu.btn.boosts.x = -90),
               (this.menu.btn.play.x = 180),
               (this.menu.btn.play.y = -12),
-              (this.jake = new Fn("assets/placeholder/jake.png")),
+              (this.jake = new Fn(couldBeJake)),
               (this.jake.x = -180),
               (this.jake.y = 60),
               this.content.addChild(this.jake),
